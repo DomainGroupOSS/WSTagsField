@@ -12,6 +12,7 @@ public enum WSTagAcceptOption {
     case `return`
     case comma
     case space
+	case none
 }
 
 open class WSTagsField: UIScrollView {
@@ -112,6 +113,12 @@ open class WSTagsField: UIScrollView {
         }
     }
 
+	open var inputCaretColor: UIColor? {
+		didSet {
+			textField.tintColor = inputCaretColor
+		}
+	}
+
     open var placeholder: String = "Tags" {
         didSet {
             updatePlaceholderTextVisibility()
@@ -191,6 +198,15 @@ open class WSTagsField: UIScrollView {
         return false
     }
 
+	public var isEmpty: Bool {
+		return (tags.count > 0) ? false : true
+	}
+
+	public var textIsEmpty: Bool {
+		guard let text = textField.text else { return true }
+		return text.isEmpty
+	}
+
     open fileprivate(set) var tags = [WSTag]()
     internal var tagViews = [WSTagView]()
 
@@ -206,7 +222,7 @@ open class WSTagsField: UIScrollView {
     open var onDidAddTag: ((WSTagsField, _ tag: WSTag) -> Void)?
 
     /// Called when a tag has been removed. You should use this opportunity to update your local list of selected items.
-    open var onDidRemoveTag: ((WSTagsField, _ tag: WSTag) -> Void)?
+	open var onDidRemoveTag: ((WSTagsField, _ tag: WSTag, _ index: Int) -> Void)?
 
     /// Called when a tag has been selected.
     open var onDidSelectTagView: ((WSTagsField, _ tag: WSTagView) -> Void)?
@@ -375,7 +391,7 @@ open class WSTagsField: UIScrollView {
             }
             // Then remove the view from our data
             if let index = self?.tagViews.index(of: tagView) {
-                self?.removeTagAtIndex(index)
+				self?.removeTagAtIndex(index, shouldCallback: true)
             }
         }
 
@@ -407,11 +423,11 @@ open class WSTagsField: UIScrollView {
 
     open func removeTag(_ tag: WSTag) {
         if let index = self.tags.index(of: tag) {
-            removeTagAtIndex(index)
+			removeTagAtIndex(index, shouldCallback: true)
         }
     }
 
-    open func removeTagAtIndex(_ index: Int) {
+	open func removeTagAtIndex(_ index: Int, shouldCallback: Bool) {
         if index < 0 || index >= self.tags.count { return }
 
         let tagView = self.tagViews[index]
@@ -420,15 +436,20 @@ open class WSTagsField: UIScrollView {
 
         let removedTag = self.tags[index]
         self.tags.remove(at: index)
-        onDidRemoveTag?(self, removedTag)
 
+		if shouldCallback {
+			onDidRemoveTag?(self, removedTag, index)
+		}
         updatePlaceholderTextVisibility()
         repositionViews()
     }
 
-    open func removeTags() {
-        self.tags.enumerated().reversed().forEach { index, _ in removeTagAtIndex(index) }
-    }
+	open func removeTags(shouldCallback: Bool = true) {
+		self.tags.enumerated().reversed().forEach { index, _ in
+			removeTagAtIndex(index, shouldCallback: shouldCallback)
+		}
+		self.textField.text = ""
+	}
 
     @discardableResult
     open func tokenizeTextFieldText() -> WSTag? {
@@ -755,11 +776,9 @@ extension WSTagsField: UITextFieldDelegate {
 
     public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if acceptTagOption == .return && onShouldAcceptTag?(self) ?? true {
-            tokenizeTextFieldText()
             return true
         }
         if let textFieldShouldReturn = textDelegate?.textFieldShouldReturn, textFieldShouldReturn(textField) {
-            tokenizeTextFieldText()
             return true
         }
         return false
@@ -767,11 +786,9 @@ extension WSTagsField: UITextFieldDelegate {
 
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         if acceptTagOption == .comma && string == "," && onShouldAcceptTag?(self) ?? true {
-            tokenizeTextFieldText()
             return false
         }
         if acceptTagOption == .space && string == " " && onShouldAcceptTag?(self) ?? true {
-            tokenizeTextFieldText()
             return false
         }
         return true
