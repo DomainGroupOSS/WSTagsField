@@ -12,7 +12,7 @@ public enum WSTagAcceptOption {
     case `return`
     case comma
     case space
-	case none
+    case none
 }
 
 open class WSTagsField: UIScrollView {
@@ -113,11 +113,11 @@ open class WSTagsField: UIScrollView {
         }
     }
 
-	open var inputCaretColor: UIColor? {
-		didSet {
-			textField.tintColor = inputCaretColor
-		}
-	}
+    open var inputCaretColor: UIColor? {
+        didSet {
+            textField.tintColor = inputCaretColor
+        }
+    }
 
     open var placeholder: String = "Tags" {
         didSet {
@@ -198,14 +198,14 @@ open class WSTagsField: UIScrollView {
         return false
     }
 
-	public var isEmpty: Bool {
-		return (tags.count > 0) ? false : true
-	}
+    public var isEmpty: Bool {
+        return (tags.count > 0) ? false : true
+    }
 
-	public var textIsEmpty: Bool {
-		guard let text = textField.text else { return true }
-		return text.isEmpty
-	}
+    public var textIsEmpty: Bool {
+        guard let text = textField.text else { return true }
+        return text.isEmpty
+    }
 
     open fileprivate(set) var tags = [WSTag]()
     internal var tagViews = [WSTagView]()
@@ -222,7 +222,7 @@ open class WSTagsField: UIScrollView {
     open var onDidAddTag: ((WSTagsField, _ tag: WSTag) -> Void)?
 
     /// Called when a tag has been removed. You should use this opportunity to update your local list of selected items.
-	open var onDidRemoveTag: ((WSTagsField, _ tag: WSTag, _ index: Int) -> Void)?
+    open var onDidRemoveTag: ((WSTagsField, _ tag: WSTag, _ index: Int) -> Void)?
 
     /// Called when a tag has been selected.
     open var onDidSelectTagView: ((WSTagsField, _ tag: WSTagView) -> Void)?
@@ -322,7 +322,7 @@ open class WSTagsField: UIScrollView {
     /// Take the text inside of the field and make it a Tag.
     open func acceptCurrentTextAsTag() {
         if let currentText = tokenizeTextFieldText(),
-           (self.textField.text?.isEmpty ?? true) == false {
+            (self.textField.text?.isEmpty ?? true) == false {
             self.addTag(currentText)
         }
     }
@@ -391,7 +391,7 @@ open class WSTagsField: UIScrollView {
             }
             // Then remove the view from our data
             if let index = self?.tagViews.index(of: tagView) {
-				self?.removeTagAtIndex(index, shouldCallback: true)
+                self?.removeTagAtIndex(index, shouldCallback: true)
             }
         }
 
@@ -415,6 +415,9 @@ open class WSTagsField: UIScrollView {
 
         updatePlaceholderTextVisibility()
         repositionViews()
+
+        // We want to scroll automatically back to the input after adding a token.
+        self.scrollRectToVisible(self.textField.frame, animated: false)
     }
 
     open func removeTag(_ tag: String) {
@@ -423,11 +426,11 @@ open class WSTagsField: UIScrollView {
 
     open func removeTag(_ tag: WSTag) {
         if let index = self.tags.index(of: tag) {
-			removeTagAtIndex(index, shouldCallback: true)
+            removeTagAtIndex(index, shouldCallback: true)
         }
     }
-
-	open func removeTagAtIndex(_ index: Int, shouldCallback: Bool) {
+    
+    open func removeTagAtIndex(_ index: Int, shouldCallback: Bool) {
         if index < 0 || index >= self.tags.count { return }
 
         let tagView = self.tagViews[index]
@@ -437,19 +440,18 @@ open class WSTagsField: UIScrollView {
         let removedTag = self.tags[index]
         self.tags.remove(at: index)
 
-		if shouldCallback {
-			onDidRemoveTag?(self, removedTag, index)
-		}
+        if shouldCallback {
+            onDidRemoveTag?(self, removedTag, index)
+        }
+
         updatePlaceholderTextVisibility()
         repositionViews()
     }
 
-	open func removeTags(shouldCallback: Bool = true) {
-		self.tags.enumerated().reversed().forEach { index, _ in
-			removeTagAtIndex(index, shouldCallback: shouldCallback)
-		}
-		self.textField.text = ""
-	}
+    open func removeTags(shouldCallback: Bool = true) {
+        self.tags.enumerated().reversed().forEach { index, _ in removeTagAtIndex(index, shouldCallback: shouldCallback) }
+        self.textField.text = ""
+    }
 
     @discardableResult
     open func tokenizeTextFieldText() -> WSTag? {
@@ -602,6 +604,7 @@ extension WSTagsField {
         textField.spellCheckingType = .no
         textField.delegate = self
         textField.font = font
+        textField.tintColor = inputCaretColor
         textField.textColor = fieldTextColor
         addSubview(textField)
 
