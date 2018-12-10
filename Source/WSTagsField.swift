@@ -119,11 +119,17 @@ open class WSTagsField: UIScrollView {
         }
     }
 
-    open var placeholder: String = "Tags" {
+    open var placeholder: String = "Search" {
         didSet {
             updatePlaceholderTextVisibility()
         }
     }
+
+	open var attributedPlaceholder: NSAttributedString? {
+		didSet {
+			updatePlaceholderTextVisibility()
+		}
+	}
 
     open var placeholderColor: UIColor? {
         didSet {
@@ -746,15 +752,15 @@ extension WSTagsField {
     }
 
     fileprivate func updatePlaceholderTextVisibility() {
-        textField.attributedPlaceholder = (placeholderAlwaysVisible || tags.count == 0) ? attributedPlaceholder() : nil
+        textField.attributedPlaceholder = (placeholderAlwaysVisible || tags.count == 0) ? constructPlaceholder() : nil
     }
 
-    private func attributedPlaceholder() -> NSAttributedString {
+    private func constructPlaceholder() -> NSAttributedString {
         var attributes: [NSAttributedString.Key: Any]?
         if let placeholderColor = placeholderColor {
             attributes = [NSAttributedString.Key.foregroundColor: placeholderColor]
         }
-        return NSAttributedString(string: placeholder, attributes: attributes)
+        return attributedPlaceholder ?? NSAttributedString(string: placeholder, attributes: attributes)
     }
 
     private var maxHeightBasedOnNumberOfLines: CGFloat {
