@@ -435,19 +435,21 @@ open class WSTagsField: UIScrollView {
             removeTagAtIndex(index, shouldCallback: true)
         }
     }
-    
-    open func removeTagAtIndex(_ index: Int, shouldCallback: Bool) {
-        if index < 0 || index >= self.tags.count { return }
 
-        let tagView = self.tagViews[index]
+    open func removeTagAtIndex(_ index: Int, shouldCallback: Bool) {
+        guard
+            let tag = self.tags[safe: index],
+            let tagView = self.tagViews[safe: index] else {
+                assertionFailure("This should not occur, if these two are out of sync something that shouldn't delete tags is deleting tags...")
+                return
+        }
+
         tagView.removeFromSuperview()
         self.tagViews.remove(at: index)
-
-        let removedTag = self.tags[index]
         self.tags.remove(at: index)
 
         if shouldCallback {
-            onDidRemoveTag?(self, removedTag, index)
+            onDidRemoveTag?(self, tag, index)
         }
 
         updatePlaceholderTextVisibility()
@@ -817,3 +819,10 @@ extension UIEdgeInsets {
 }
 
 #endif
+
+private extension Array {
+    subscript (safe index: Int) -> Element? {
+        guard self.indices.contains(index) else { return nil }
+        return self[index]
+    }
+}
