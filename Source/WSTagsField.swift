@@ -822,6 +822,7 @@ extension UIEdgeInsets {
 
 private extension Array {
     subscript (safe index: Int) -> Element? {
-        return index < count ? self[index] : nil
+        guard self.indices.contains(index) else { return nil }
+        return self[index]
     }
 }
