@@ -52,7 +52,7 @@ class WSTagsFieldTests: XCTestCase {
     func testAddRemoveTagAtIndex() {
         let tagsField = WSTagsField()
         tagsField.addTags(["Whitesmith", "iOS", "iOS", "UIKit"])
-        tagsField.removeTagAtIndex(0)
+        tagsField.removeTagAtIndex(0, shouldCallback: false)
         XCTAssert(tagsField.tags.count == 2)
     }
 

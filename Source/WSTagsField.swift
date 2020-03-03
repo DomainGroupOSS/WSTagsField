@@ -308,7 +308,9 @@ open class WSTagsField: UIScrollView {
     }
 
     deinit {
-        if let observer = layerBoundsObserver {
+        if #available(iOS 13, *) {
+            // no action should be needed since layerBoundsObsever will be deallocated after deinit runs
+        } else if let observer = layerBoundsObserver {
             removeObserver(observer, forKeyPath: "layer.bounds")
             observer.invalidate()
         }
@@ -396,7 +398,7 @@ open class WSTagsField: UIScrollView {
                 self?.textField.text = replacementText
             }
             // Then remove the view from our data
-            if let index = self?.tagViews.index(of: tagView) {
+            if let index = self?.tagViews.firstIndex(of: tagView) {
                 self?.removeTagAtIndex(index, shouldCallback: true)
             }
         }
@@ -431,7 +433,7 @@ open class WSTagsField: UIScrollView {
     }
 
     open func removeTag(_ tag: WSTag) {
-        if let index = self.tags.index(of: tag) {
+        if let index = self.tags.firstIndex(of: tag) {
             removeTagAtIndex(index, shouldCallback: true)
         }
     }
@@ -485,7 +487,7 @@ open class WSTagsField: UIScrollView {
     // MARK: - Tag selection
 
     open func selectNextTag() {
-        guard let selectedIndex = tagViews.index(where: { $0.selected }) else {
+        guard let selectedIndex = tagViews.firstIndex(where: { $0.selected }) else {
             return
         }
 
@@ -497,7 +499,7 @@ open class WSTagsField: UIScrollView {
     }
 
     open func selectPrevTag() {
-        guard let selectedIndex = tagViews.index(where: { $0.selected }) else {
+        guard let selectedIndex = tagViews.firstIndex(where: { $0.selected }) else {
             return
         }
 
